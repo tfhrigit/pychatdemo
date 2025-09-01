@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyChat - WhatsApp Lite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .chat-list-item:hover {
+            background-color: #f5f5f5;
+        }
+        .dark-mode .chat-list-item:hover {
+            background-color: #2d3748;
+        }
+    </style>
+</head>
+<body class="bg-gray-100" x-data="{ darkMode: false, activeTab: 'chats' }" :class="{ 'dark-mode bg-gray-900': darkMode }">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-1/4 bg-white border-r border-gray-200 flex flex-col dark:bg-gray-800 dark:border-gray-700">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-green-500 text-white dark:bg-green-600">
+                <h1 class="text-xl font-bold">PyChat</h1>
+                <div class="flex space-x-4">
+                    <button @click="darkMode = !darkMode" class="hover:text-gray-200">
+                        <i x-show="!darkMode" class="fas fa-moon"></i>
+                        <i x-show="darkMode" class="fas fa-sun"></i>
+                    </button>
+                    <a href="{{ url_for('profile') }}" class="hover:text-gray-200">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="hover:text-gray-200">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-200 dark:border-gray-700">
+                <button @click="activeTab = 'chats'" 
+                        :class="activeTab === 'chats' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'"
+                        class="flex-1 py-3 font-medium dark:text-gray-300">
+                    Chats
+                </button>
+                <button @click="activeTab = 'groups'" 
+                        :class="activeTab === 'groups' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'"
+                        class="flex-1 py-3 font-medium dark:text-gray-300">
+                    Groups
+                </button>
+                <button @click="activeTab = 'stories'" 
+                        :class="activeTab === 'stories' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'"
+                        class="flex-1 py-3 font-medium dark:text-gray-300">
+                    Stories
+                </button>
+            </div>
+            
+            <!-- Search -->
+            <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" placeholder="Search..." 
+                           class="pl-10 w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Chats Tab -->
+                <template x-if="activeTab === 'chats'">
+                    <div>
+                        {% for user in users %}
+                        <a href="{{ url_for('chat', user_id=user.id) }}" 
+                           class="flex items-center p-4 border-b border-gray-200 chat-list-item dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700">
+                            <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}" 
+                                 class="w-12 h-12 rounded-full object-cover">
+                            <div class="ml-3 flex-1">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="font-semibold">{{ user.username }}</h2>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {% if user.last_seen %}
+                                            {{ user.last_seen.strftime('%H:%M') }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-500 truncate dark:text-gray-400">{{ user.status }}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </template>
+                
+                <!-- Groups Tab -->
+                <template x-if="activeTab === 'groups'">
+                    <div>
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <button class="w-full bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition duration-200"
+                                    onclick="document.getElementById('create-group-modal').classList.remove('hidden')">
+                                Create New Group
+                            </button>
+                        </div>
+                        {% for group in groups %}
+                        <a href="{{ url_for('group_chat', group_id=group.id) }}" 
+                           class="flex items-center p-4 border-b border-gray-200 chat-list-item dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700">
+                            <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="font-semibold">{{ group.name }}</h2>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">14:30</span>
+                                </div>
+                                <p class="text-sm text-gray-500 truncate dark:text-gray-400">{{ group.description }}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </template>
+                
+                <!-- Stories Tab -->
+                <template x-if="activeTab === 'stories'">
+                    <div class="p-4">
+                        <!-- My Story -->
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3 dark:text-gray-300">My Story</h3>
+                            <div class="flex items-center">
+                                <div class="relative">
+                                    <img src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) }}" 
+                                         class="w-16 h-16 rounded-full object-cover border-2 border-green-500">
+                                    <div class="absolute bottom-0 right-0 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                        <i class="fas fa-plus text-xs"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="font-semibold dark:text-gray-200">My Status</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Tap to add status update</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Updates -->
+                        <div>
+                            <h3 class="font-semibold text-gray-700 mb-3 dark:text-gray-300">Recent Updates</h3>
+                            {% for story in stories %}
+                            <div class="flex items-center p-3 rounded-lg mb-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <img src="{{ url_for('static', filename='uploads/' + story.user.profile_picture) }}" 
+                                     class="w-12 h-12 rounded-full object-cover border-2 border-green-500">
+                                <div class="ml-3">
+                                    <p class="font-semibold dark:text-gray-200">{{ story.user.username }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ story.timestamp.strftime('%H:%M') }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div class="text-center p-8">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-green-900">
+                    <i class="fas fa-comments text-green-500 text-3xl dark:text-green-300"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2 dark:text-white">Welcome to PyChat</h2>
+                <p class="text-gray-600 max-w-md dark:text-gray-400">
+                    Select a chat from the sidebar to start messaging or create a new group conversation.
+                    Your messages are secured with end-to-end encryption.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg w-full max-w-md p-6 dark:bg-gray-800">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold dark:text-white">Create New Group</h3>
+                <button onclick="document.getElementById('create-group-modal').classList.add('hidden')" 
+                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" action="{{ url_for('create_group') }}">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 dark:text-gray-300">Group Name</label>
+                    <input type="text" name="name" required 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="Enter group name">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 dark:text-gray-300">Description</label>
+                    <input type="text" name="description" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           placeholder="Enter group description">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 dark:text-gray-300">Select Members</label>
+                    <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600">
+                        {% for user in users %}
+                        <label class="flex items-center p-2 hover:bg-gray-100 rounded dark:hover:bg-gray-600">
+                            <input type="checkbox" name="members" value="{{ user.id }}" class="mr-2">
+                            <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}" 
+                                 class="w-8 h-8 rounded-full object-cover mr-2">
+                            <span class="dark:text-gray-300">{{ user.username }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200">
+                    Create Group
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        // Initialize SocketIO
+        const socket = io();
+        
+        // Handle connection
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        
+        // Handle user status updates
+        socket.on('user_status', (data) => {
+            console.log('User status updated:', data);
+            // Here you would update the UI to reflect the user's online status
+        });
+    </script>
+</body>
+</html>
