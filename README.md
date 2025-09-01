@@ -23,25 +23,7 @@ register akun baru atau login dengan akun yang sudah dibuat.
 # struktur project
 setelah instalasi, struktur project akan terlihat seperti ini:
 
-pychat/
-├── app.py
-├── database.py
-├── models.py
-├── requirements.txt
-├── venv/ (jika menggunakan virtual environment)
-├── instance/
-│   └── pychat.db (file database akan dibuat otomatis)
-├── uploads/ (folder untuk file yang diupload)
-├── static/
-│   ├── style.css
-│   └── script.js
-└── templates/
-    ├── base.html
-    ├── login.html
-    ├── register.html
-    ├── index.html
-    ├── chat.html
-    └── profile.html
+<img width="679" height="623" alt="Screenshot (408)" src="https://github.com/user-attachments/assets/5bce17ff-b526-4319-baf5-48e09bd69ecc" />
 
 # catatan penting
 pastikan port 5000 tidak digunakan oleh aplikasi lain
