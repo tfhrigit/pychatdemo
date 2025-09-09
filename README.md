@@ -10,7 +10,7 @@ atau download dan ekstrak file zip, kemudian masuk ke direktori project
 windows: python -m venv venv lalu venv\scripts\activate
 macos/linux: python3 -m venv venv lalu source venv/bin/activate
 # install dependencies
-jalankan perintah: pip install -r requirements.txt
+jalankan perintaah: pip install -r requirements.txt
 # setup database
 aplikasi akan secara otomatis membuat database sqlite saat pertama kali dijalankan.
 file database pychat.db akan dibuat di direktori project.
